@@ -40,14 +40,14 @@ nltk.download('punkt')
 
 
 @api_view(['POST'])
-def home(request):
+def home(request,botid):
     return Response({"message": "Please choose an option: '1' for PDF, '2' for URL, '3' for description, or '4' for multiple URLs."})
 
 
 
 
 @api_view(['POST'])
-def handle_user_choice(request, uid, projectid, botid):
+def handle_user_choice(request,botid):
     try:
         user_choice = request.data.get('choice')
         
@@ -56,8 +56,6 @@ def handle_user_choice(request, uid, projectid, botid):
             if pdf_file:
                 description = select_and_read_pdf(pdf_file)
                 UserDescription.objects.create(
-                    uid=uid,
-                    projectid=projectid,
                     botid=botid,
                     description=description,
                     url_data=None  # No URL data for choice 1
@@ -71,8 +69,6 @@ def handle_user_choice(request, uid, projectid, botid):
             if url:
                 description, urls = fetch_data_from_url(url)
                 UserDescription.objects.create(
-                    uid=uid,
-                    projectid=projectid,
                     botid=botid,
                     description=description,
                     url_data=urls
@@ -85,8 +81,6 @@ def handle_user_choice(request, uid, projectid, botid):
             description = request.data.get('description')
             if description:
                 UserDescription.objects.create(
-                    uid=uid,
-                    projectid=projectid,
                     botid=botid,
                     description=description,
                     url_data=None  # No URL data for choice 3
@@ -107,8 +101,6 @@ def handle_user_choice(request, uid, projectid, botid):
                 
                 combined_description = "\n\n".join(descriptions)
                 UserDescription.objects.create(
-                    uid=uid,
-                    projectid=projectid,
                     botid=botid,
                     description=combined_description,
                     url_data=urls_collected
@@ -136,15 +128,13 @@ from .models import UserDescription
 
 @api_view(['POST'])
 @csrf_exempt
-def handle_bot_style(request, uid, projectid, botid):
+def handle_bot_style(request,botid):
     try:
         data = json.loads(request.body)
         interaction_style = data.get('interaction_style')
 
         # Find or create UserDescription instance based on uid, projectid, botid
         user_description = UserDescription.objects.get(
-                uid=uid,
-                projectid=projectid,
                 botid=botid
             )
 
@@ -163,11 +153,10 @@ def handle_bot_style(request, uid, projectid, botid):
 
 @api_view(['POST'])
 @csrf_exempt
-def createbot(request, uid, projectid, botid):
+def createbot(request,botid):
     user_description = get_object_or_404(
         UserDescription,
-        uid=uid,
-        projectid=projectid,
+
         botid=botid
     )
 
@@ -180,8 +169,7 @@ def createbot(request, uid, projectid, botid):
 
     try:
         user_description = UserDescription.objects.get(
-                    uid=uid,
-                    projectid=projectid,
+
                     botid=botid
                 )
         try:
@@ -311,7 +299,7 @@ def createbot(request, uid, projectid, botid):
                     
                     user_input_template = description + "\n" + user_input
                     
-                    print("\nUser input is\n\n", user_input_template)
+        
                     
                     chat_session = model.start_chat(
                         history=[
@@ -320,7 +308,6 @@ def createbot(request, uid, projectid, botid):
                     )
                     
                     histroy_response = chat_session.send_message(user_input_template)
-                    print("History response\n\n", histroy_response.text)
                     
                     conv = histroy_response.text
                     
@@ -353,13 +340,10 @@ def createbot(request, uid, projectid, botid):
                                 ]
                             )
                             histroy_response = chat_session.send_message(user_input_template)
-                            print("History response\n\n", histroy_response.text)
                             conv = histroy_response.text
                     
-                    print("Formatted conversation:", formatted_conversation)
                     
                     history_list.extend(formatted_conversation)
-                    print("Updated history list:", history_list)
                     
                 except Exception as e:
                     print(f"Error in main loop: {e}")
@@ -379,7 +363,7 @@ from .models import UserDescription
 
 @api_view(['POST'])
 @csrf_exempt
-def chat_with_bot(request, uid, projectid, botid):
+def chat_with_bot(request,botid):
     # Configure the API key
     try:
         genai.configure(api_key="AIzaSyCo870-t1sjOB4bASzJ4A0rYe0Wjil3SgA")
@@ -400,8 +384,6 @@ def chat_with_bot(request, uid, projectid, botid):
     # Retrieve the UserDescription object based on uid, projectid, and botid
     user_description = get_object_or_404(
         UserDescription,
-        uid=uid,
-        projectid=projectid,
         botid=botid
     )
 

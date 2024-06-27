@@ -37,8 +37,42 @@ def extract_links(page):
     except Exception as e:
         print(f"Error extracting links: {e}")
         return []
+    
+    
+import re
 
-def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=5):
+def filter_links_by_pattern(url, links):
+  """Filters links based on a pattern match with the main URL's domain.
+
+  Args:
+      url (str): The main URL.
+      links (list): A list of links to be filtered.
+
+  Returns:
+      list: A new list containing only links that match the pattern.
+  """
+
+  # Extract the domain name from the main URL
+  domain_pattern = r'^[^/]*://([^/]+)'  # Matches protocol and domain (e.g., https://www.example.com)
+  domain_match = re.match(domain_pattern, url)
+  if not domain_match:
+    raise ValueError("Failed to extract domain name from main URL")
+  domain_name = domain_match.group(1)
+
+  # Create the regular expression pattern to match links with the same domain
+  pattern = r'\b' + re.escape(domain_name) + r'\b'  # Matches exact domain name boundaries
+
+  # Filter links based on the pattern
+  filtered_links = []
+  for link in links:
+    if re.search(pattern, link):
+      filtered_links.append(link)
+
+  return filtered_links
+
+
+import re
+def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=3):
     if visited_urls is None:
         visited_urls = {}
 
@@ -97,6 +131,9 @@ def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=5):
     images = [urljoin(url, img_tag.get('src')) for img_tag in soup.find_all('img') if img_tag.get('src')]
     links = [urljoin(url, link_tag['href']) for link_tag in soup.find_all('a', href=True)]
 
+    
+    links = filter_links_by_pattern(url, links)
+    
     content = f"\nText from {url}:\n{text}"
     if images:
         content += "\nImages:\n" + "\n".join(images)
@@ -104,11 +141,10 @@ def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=5):
         content += "\nLinks:\n" + "\n".join(links)
 
     for link in links:
-        if link not in visited_urls:
-            nested_content, visited_urls = fetch_data_from_url(link, visited_urls, depth + 1, max_depth)
-            content += f"\n\nThe content in the link {link} is:\n{nested_content}"
-
-    print(content)
+        
+        if (link not in visited_urls) :
+                nested_content, visited_urls = fetch_data_from_url(link, visited_urls, depth + 1, max_depth)
+                content += f"\n\nThe content in the link {link} is:\n{nested_content}"
     return content, visited_urls
 
 def select_and_read_pdf(pdf_file):
