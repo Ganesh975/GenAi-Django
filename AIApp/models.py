@@ -5,7 +5,7 @@ class UserDescription(models.Model):
 
     botid = models.CharField(max_length=255)
     description = models.TextField()
-    interaction_style = models.CharField(max_length=50,null=True)
+    interaction_style = models.CharField(max_length=50,null=True,default="polite")
     url_data = models.JSONField(null=True) # Assuming you want an empty list as default
     created_at = models.DateTimeField(auto_now_add=True)
     history_list = models.JSONField(null=True, blank=True)

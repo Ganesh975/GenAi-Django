@@ -72,20 +72,28 @@ def filter_links_by_pattern(url, links):
 
 
 import re
-def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=3):
+def fetch_data_from_url(url,visited_urls_list=None, visited_urls=None, depth=0, max_depth=3):
     if visited_urls is None:
-        visited_urls = {}
+        visited_urls = []
+    if visited_urls_list is None:
+        visited_urls_list =[]
 
     if depth > max_depth:
-        visited_urls[url] = {
+        visited_urls_list.append(url)
+        visited_urls.append({
             "id": len(visited_urls) + 1,
             "status": "not processed",
+            "status_message": None,
             "url": url,
             "title": None,
+            "filename_original": None,
+            "retrain_initiated_at": None,
             "characters": 0,
+            "text": None,
             "chunks_count": 0,
             "created_at": datetime.now().isoformat()
-        }
+        })
+
         return "Max depth reached", visited_urls
 
     headers = {
@@ -98,15 +106,21 @@ def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=3):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        visited_urls[url] = {
+        visited_urls_list.append(url)
+        visited_urls.append({
             "id": len(visited_urls) + 1,
             "status": "not processed",
+            "status_message": str(e),
             "url": url,
             "title": None,
+            "filename_original": None,
+            "retrain_initiated_at": None,
             "characters": 0,
+            "text": None,
             "chunks_count": 0,
             "created_at": datetime.now().isoformat()
-        }
+        })
+
         print(f"Error fetching {url}: {e}")
         return f"Error fetching {url}: {e}", visited_urls
 
@@ -117,16 +131,21 @@ def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=3):
     text = soup.get_text()
     characters = len(text)
     chunks_count = characters // 1000  # Assuming 1000 characters per chunk as an example
-
-    visited_urls[url] = {
+    visited_urls_list.append(url)
+    visited_urls.append({
         "id": len(visited_urls) + 1,
         "status": "processed",
+        "status_message": None,
         "url": url,
         "title": title,
+        "filename_original": None,
+        "retrain_initiated_at": None,
         "characters": characters,
+        "text": None,
         "chunks_count": chunks_count,
         "created_at": datetime.now().isoformat()
-    }
+    })
+
 
     images = [urljoin(url, img_tag.get('src')) for img_tag in soup.find_all('img') if img_tag.get('src')]
     links = [urljoin(url, link_tag['href']) for link_tag in soup.find_all('a', href=True)]
@@ -142,9 +161,10 @@ def fetch_data_from_url(url, visited_urls=None, depth=0, max_depth=3):
 
     for link in links:
         
-        if (link not in visited_urls) :
-                nested_content, visited_urls = fetch_data_from_url(link, visited_urls, depth + 1, max_depth)
+        if (link not in visited_urls_list) :
+                nested_content, visited_urls = fetch_data_from_url(link,visited_urls_list, visited_urls, depth + 1, max_depth)
                 content += f"\n\nThe content in the link {link} is:\n{nested_content}"
+    print(visited_urls_list)
     return content, visited_urls
 
 def select_and_read_pdf(pdf_file):
