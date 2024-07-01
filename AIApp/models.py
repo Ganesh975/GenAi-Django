@@ -3,7 +3,7 @@ from django.utils import timezone
 
 class UserDescription(models.Model):
 
-    botid = models.CharField(max_length=255)
+    botid = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     interaction_style = models.CharField(max_length=50,null=True,default="polite")
     url_data = models.JSONField(null=True) # Assuming you want an empty list as default

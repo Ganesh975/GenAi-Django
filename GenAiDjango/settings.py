@@ -86,16 +86,16 @@ WSGI_APPLICATION = "GenAiDjango.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
-# }
-
 DATABASES = {
-    "default": dj_database_url.parse("postgresql://genaidb_user:CCF8xnlwnJfwvULYN6C3wUH5hQnw0zDP@dpg-cq183q3v2p9s73crn9v0-a.oregon-postgres.render.com/genaidb")
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
+
+# DATABASES = {
+#     "default": dj_database_url.parse("postgresql://genaidb_user:CCF8xnlwnJfwvULYN6C3wUH5hQnw0zDP@dpg-cq183q3v2p9s73crn9v0-a.oregon-postgres.render.com/genaidb")
+# }
 
 
 
