@@ -154,12 +154,16 @@ def handle_bot_style(request,botid):
 @csrf_exempt
 def isbotcreated(request, botid):
     # Assuming 'bot_id' is passed as a parameter to identify the UserDescription instance
-    user_description = get_object_or_404(UserDescription, botid=botid)
-    
-    if user_description.train_status:
-        return JsonResponse({'status': 'Bot is ready and trained.'})
-    else:
-        return JsonResponse({'status': 'Bot is not trained yet.'})  
+    try:
+        user_description = get_object_or_404(UserDescription, botid=botid)
+        
+        if user_description.train_status:
+            return JsonResponse({'status': 'true'})
+        else:
+            return JsonResponse({'status': 'false'})  
+    except:
+        print("The bot id is not there")
+        return JsonResponse({'error': 'Unable to find the given bot id'})
 
 @api_view(['POST'])
 @csrf_exempt
