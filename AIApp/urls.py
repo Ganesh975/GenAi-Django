@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import home,handle_user_choice,handle_bot_style,createbot,chat_with_bot,isbotcreated
+from .views import home,handle_user_choice,handle_bot_style,createbot,chat_with_bot,isbotcreated,delete_bot
 
 urlpatterns = [
 
@@ -9,5 +9,6 @@ urlpatterns = [
     path('v1/createbot/<str:botid>', createbot, name='createbot'),
     path('v1/chat/<str:botid>', chat_with_bot, name='chat_with_bot'),
     path('v1/isbotcreated/<str:botid>', isbotcreated, name='isbotcreated'),
+    path('v1/delete_bot/<str:botid>', delete_bot, name='delete_bot'),
 
 ]

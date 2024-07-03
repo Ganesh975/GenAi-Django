@@ -426,3 +426,20 @@ def chat_with_bot(request,botid):
 
     else:
         return JsonResponse({'error': 'Bot is not trained yet.'}, status=400)
+    
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import UserDescription
+
+
+@api_view(['DELETE'])
+def delete_bot(request, botid):
+    try:
+        print(botid)
+        user_description = UserDescription.objects.get(botid=botid)
+    except UserDescription.DoesNotExist:
+        return Response({'error': 'Bot not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    user_description.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
