@@ -80,19 +80,7 @@ def fetch_data_from_url(url,visited_urls_list=None, visited_urls=None, depth=0, 
 
     if depth > max_depth:
         visited_urls_list.append(url)
-        visited_urls.append({
-            "id": len(visited_urls) + 1,
-            "status": "not processed",
-            "status_message": None,
-            "url": url,
-            "title": None,
-            "filename_original": None,
-            "retrain_initiated_at": None,
-            "characters": 0,
-            "text": None,
-            "chunks_count": 0,
-            "created_at": datetime.now().isoformat()
-        })
+        
 
         return "Max depth reached", visited_urls
 
@@ -107,19 +95,7 @@ def fetch_data_from_url(url,visited_urls_list=None, visited_urls=None, depth=0, 
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         visited_urls_list.append(url)
-        visited_urls.append({
-            "id": len(visited_urls) + 1,
-            "status": "not processed",
-            "status_message": str(e),
-            "url": url,
-            "title": None,
-            "filename_original": None,
-            "retrain_initiated_at": None,
-            "characters": 0,
-            "text": None,
-            "chunks_count": 0,
-            "created_at": datetime.now().isoformat()
-        })
+        
 
         print(f"Error fetching {url}: {e}")
         return f"Error fetching {url}: {e}", visited_urls
@@ -164,8 +140,79 @@ def fetch_data_from_url(url,visited_urls_list=None, visited_urls=None, depth=0, 
         if (link not in visited_urls_list) :
                 nested_content, visited_urls = fetch_data_from_url(link,visited_urls_list, visited_urls, depth + 1, max_depth)
                 content += f"\n\nThe content in the link {link} is:\n{nested_content}"
-    print(visited_urls_list)
     return content, visited_urls
+
+# def fetch_data_from_url(url, visited_urls_list=None, visited_urls=None, depth=0, max_depth=3):
+#     if visited_urls is None:
+#         visited_urls = []
+#     if visited_urls_list is None:
+#         visited_urls_list = []
+
+#     if depth > max_depth:
+#         append_to_visited(url, visited_urls_list, visited_urls, "not processed", "Max depth reached")
+#         return "Max depth reached", visited_urls
+
+#     headers = {
+#         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+#         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+#         'Accept-Language': 'en-US,en;q=0.5'
+#     }
+
+#     try:
+#         response = requests.get(url, headers=headers)
+#         response.raise_for_status()
+#     except requests.exceptions.ProxyError as e:
+#         append_to_visited(url, visited_urls_list, visited_urls, "not processed", f"Proxy error: {e}")
+#         print(f"Proxy error fetching {url}: {e}")
+#         return f"Proxy error fetching {url}: {e}", visited_urls
+#     except requests.exceptions.RequestException as e:
+#         append_to_visited(url, visited_urls_list, visited_urls, "not processed", str(e))
+#         print(f"Error fetching {url}: {e}")
+#         return f"Error fetching {url}: {e}", visited_urls
+
+#     html_content = response.text
+#     soup = BeautifulSoup(html_content, 'html.parser')
+
+#     title = soup.title.string if soup.title else "No title"
+#     text = soup.get_text()
+#     characters = len(text)
+#     chunks_count = characters // 1000  # Assuming 1000 characters per chunk as an example
+#     append_to_visited(url, visited_urls_list, visited_urls, "processed", None, title, characters, chunks_count)
+
+#     images = [urljoin(url, img_tag.get('src')) for img_tag in soup.find_all('img') if img_tag.get('src')]
+#     links = [urljoin(url, link_tag['href']) for link_tag in soup.find_all('a', href=True)]
+#     links = filter_links_by_pattern(url, links)
+
+#     content = f"\nText from {url}:\n{text}"
+#     if images:
+#         content += "\nImages:\n" + "\n".join(images)
+#     if links:
+#         content += "\nLinks:\n" + "\n".join(links)
+
+#     for link in links:
+#         if link not in visited_urls_list:
+#             nested_content, visited_urls = fetch_data_from_url(link, visited_urls_list, visited_urls, depth + 1, max_depth)
+#             content += f"\n\nThe content in the link {link} is:\n{nested_content}"
+
+#     print(visited_urls_list)
+#     return content, visited_urls
+
+# def append_to_visited(url, visited_urls_list, visited_urls, status, status_message=None, title=None, characters=0, chunks_count=0):
+#     visited_urls_list.append(url)
+#     visited_urls.append({
+#         "id": len(visited_urls) + 1,
+#         "status": status,
+#         "status_message": status_message,
+#         "url": url,
+#         "title": title,
+#         "filename_original": None,
+#         "retrain_initiated_at": None,
+#         "characters": characters,
+#         "text": None,
+#         "chunks_count": chunks_count,
+#         "created_at": datetime.now().isoformat()
+#     })
+
 
 def select_and_read_pdf(pdf_file):
     try:
