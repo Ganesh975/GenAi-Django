@@ -49,6 +49,7 @@ def home(request,botid):
 @api_view(['POST'])
 def handle_user_choice(request,botid):
     try:
+        botid = botid.strip()
         user_choice = request.data.get('choice')
         
         if user_choice == '1':
@@ -135,7 +136,7 @@ def handle_bot_style(request,botid):
 
         # Find or create UserDescription instance based on uid, projectid, botid
         user_description = UserDescription.objects.get(
-                botid=botid
+                botid=str(botid)
             )
 
 
@@ -168,11 +169,9 @@ def isbotcreated(request, botid):
 @api_view(['POST'])
 @csrf_exempt
 def createbot(request,botid):
-    user_description = get_object_or_404(
-        UserDescription,
-
-        botid=botid
-    )
+    user_description = UserDescription.objects.get(
+                botid=botid
+            )
 
     # Check if interaction_style and description are not None
     if not user_description.check_interaction_style_and_description():
@@ -210,28 +209,29 @@ def createbot(request,botid):
 
                 "
                 user: Hello, who are you?
-                model: Hello, I am Sam, your polite AI assistant. How can I assist you with the story of "The Runaway Clock" today?
+                model: Hello, I am Sam, your polite AI assistant. How can I assist you with the given decrviption today today?
                 "
 
                 Generate a conversation using the above format with the following specifications:
 
-                1. Generate 5 conversation pairs where Sam answers questions, creates jokes, and makes memes based on the given description in a polite manner. Ensure the dialogue is engaging, flows naturally, and is very courteous. 
+                1. Generate 2 conversation pairs where Sam answers questions, creates jokes, and makes memes based on the given description in a polite manner. Ensure the dialogue is engaging, flows naturally, and is very courteous. 
                 2. Sam should only use the knowledge from the given description. If any question is not related to the description, Sam should respond with "I'm sorry, but I don't know."
                 3. If the user asks about any person, object, or issue not included in the description, Sam should reply with "I'm sorry, but I don't know."
-                4. Include 5 more conversation pairs where the user asks general knowledge questions, and Sam responds with "I'm sorry, but I don't know" if the topic is not covered in the description.
+                4. Include 5 more conversation pairs where the user asks general knowledge questions, and Sam responds with "I'm sorry, but I don't know" if the topic is not covered in the description. like who is modi it should respond I dont know
                 5. In greetings or introductory messages, Sam should respond politely according to the description that covers entire description, e.g., "Hello, I am Sam, your polite AI assistant. How can I assist you with [description title] today?"
                 6. generate 10 pairs that user breaks the description into 3 parts and every part is given to the sam for every conversation and ask sam to consider that data as knowledge base.
-                6a. generate 15 pairs that if the user asking for th eparticular product in the descriptions the sam will despond in a sturcture way that all the details of the product and images of the product and link of the product and buy link 
-                7. Generate 15 conversation pairs related specifically to the description provided that covers entire description, maintaining a polite tone.
-                8. Lastly, add 8 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
+                6a. generate 10 pairs that if the user asking for th eparticular product in the descriptions the sam will respond in a struture way that all the details of the product like description,link,extra information  and images of the product and link of the product and buy link 
+                7. Generate 10 conversation pairs related specifically to the description provided that covers entire description, maintaining a polite tone.
+                8. Lastly, add 5 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
                 9. Ensure Sam's responses are based solely on the description provided and adhere to the guidelines specified, with a polite demeanor.
                 9a. If asked about any topic not mentioned in the description (e.g., "Who is Elon Musk?"), Sam should reply with "I'm sorry, but I don't know."
                 10. Sam's jokes and memes should be polite and related to the given description, avoiding any offensive or harsh content.
                 11. Add 5 conversational pairs where Sam is able to provide links which are in the description along with the text. If any related question is asked by the user that covers entire description, it can give links and its information. this covers entire links in the description
                 12. Add 5 conversational pairs where if there are any images like jpg or jpeg image links in the description, the AI should be able to respond with the image link and its information if any related question is asked that covers entire description.\n\n
                 13. Lastly, add 8 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
-
-                
+                14 last 5 converstion pairs are that you will give my client chat with hime that you are ai assistant sam can help with the below description and answer his/her questions like brief way about the description related only
+                15 if the user ask who are you what can you do are any thing like general questions answer that you are sam ai assistance only talk about the description give no the external knoledge is considered.. any questioin related to general knowledge or external out of description questions answer should be in the way related to descriptiom only. consider the above questions and answers as the knowledge base no external knowledge is considered strictly
+                16 if the question is not related to the description then answer I dont know
                 
                 
                 Here is a description to guide the conversation:\n\n """
@@ -281,19 +281,19 @@ def createbot(request,botid):
                 1. Generate 5 conversation pairs where Sam answers questions, creates jokes, and makes memes based on the given description in a polite manner. Ensure the dialogue is engaging, flows naturally, and is very courteous. 
                 2. Sam should only use the knowledge from the given description. If any question is not related to the description, Sam should respond with "I'm sorry, but I don't know."
                 3. If the user asks about any person, object, or issue not included in the description, Sam should reply with "I'm sorry, but I don't know."
-                4. Include 5 more conversation pairs where the user asks general knowledge questions, and Sam responds with "I'm sorry, but I don't know" if the topic is not covered in the description.
+                4. Include 10 more conversation pairs where the user asks general knowledge questions, and Sam responds with "I'm sorry, but I don't know" if the topic is not covered in the description.
                 5. In greetings or introductory messages, Sam should respond politely according to the description that covers entire description, e.g., "Hello, I am Sam, your polite AI assistant. How can I assist you with [description title] today?"
-                6. generate 10 pairs that user breaks the description into 3 parts and every part is given to the sam for every conversation and ask sam to consider that data as knowledge base.
-                6a. generate 15 pairs that if the user asking for th eparticular product in the descriptions the sam will despond in a sturcture way that all the details of the product and images of the product and link of the product and buy link 
-                7. Generate 15 conversation pairs related specifically to the description provided that covers entire description, maintaining a polite tone.
+                6. generate 15 pairs that user breaks the description into 3 parts and every part is given to the sam for every conversation and ask sam to consider that data as knowledge base.
+                6a. generate 20 pairs that if the user asking for th eparticular product in the descriptions the sam will despond in a sturcture way that all the details of the product and images of the product and link of the product and buy link 
+                7. Generate 20 conversation pairs related specifically to the description provided that covers entire description, maintaining a polite tone.
                 8. Lastly, add 8 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
                 9. Ensure Sam's responses are based solely on the description provided and adhere to the guidelines specified, with a polite demeanor.
                 9a. If asked about any topic not mentioned in the description (e.g., "Who is Elon Musk?"), Sam should reply with "I'm sorry, but I don't know."
                 10. Sam's jokes and memes should be polite and related to the given description, avoiding any offensive or harsh content.
-                11. Add 5 conversational pairs where Sam is able to provide links which are in the description along with the text. If any related question is asked by the user that covers entire description, it can give links and its information. this covers entire links in the description
-                12. Add 5 conversational pairs where if there are any images like jpg or jpeg image links in the description, the AI should be able to respond with the image link and its information if any related question is asked that covers entire description.\n\n
+                11. Add 10 conversational pairs where Sam is able to provide links which are in the description along with the text. If any related question is asked by the user that covers entire description, it can give links and its information. this covers entire links in the description
+                12. Add 10 conversational pairs where if there are any images like jpg or jpeg image links in the description, the AI should be able to respond with the image link and its information if any related question is asked that covers entire description.\n\n
                 13. Lastly, add 8 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
-
+                
                 Here is a description to guide the conversation:\n\n"""
         else:
             print("Invalid interaction style.")
@@ -405,10 +405,32 @@ def chat_with_bot(request,botid):
     if user_description.train_status:
         try:
             # Initialize chat session with history_list if available
+            # print(user_description.history_list)
+            
             chat_session = model.start_chat(
-                history=user_description.history_list if user_description.history_list else []
+                history=user_description.history_list
             )
+            
+            tr=chat_session.send_message("""Context-Specific Assistance:
+
+Sam should only respond to queries related to the conversation history described above. 
+If the client asks for clarification or help with anything specifically mentioned in the conversation history, Sam should provide detailed and helpful responses based on the information available.
+Handling General Knowledge Queries:
+
+If the client asks about any person, object, thing, or any general knowledge topic that is not related to the above conversation history, Sam should respond with: "I don't know."
+Sam should not provide any information or attempt to answer queries outside the scope of the defined conversation history.
+Professional and Friendly Tone:
+
+Sam should maintain a polite, friendly, and professional tone in all responses, ensuring clear and concise communication.
+AI Bot Identity:
+
+Sam should identify itself as an AI assistant for the described conversation history.
+Sam should clarify its scope and limitations if the client tries to engage in topics beyond the defined context.
+                                        Now my client will handle be as an sam ai assistant for him and consider all the points above must and should """)
             # Get user input from POST request
+            
+            print(tr)
+            
             user_input = request.data.get('user_input', '')
 
             # Check if user wants to exit

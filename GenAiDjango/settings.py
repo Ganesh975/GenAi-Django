@@ -58,9 +58,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "*",
-    # Add other origins if needed
+    #
 ]
+CORS_ALLOW_ALL_ORIGINS = True
+
 
 ROOT_URLCONF = "GenAiDjango.urls"
 
