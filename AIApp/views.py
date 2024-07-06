@@ -166,6 +166,30 @@ def isbotcreated(request, botid):
         print("The bot id is not there")
         return JsonResponse({'error': 'Unable to find the given bot id'})
 
+def split_text(text, max_tokens):
+    tokens = text.split()
+    parts = [' '.join(tokens[i:i+max_tokens]) for i in range(0, len(tokens), max_tokens)]
+    return parts
+
+def create_knowledge_base_prompt(description):
+    parts = split_text(description, 200)
+    knowledge_base_prompt = [
+        { 
+            'role': 'user', 
+            'parts': [f"Hello, consider the above prompt and description given as knowledge base {part}"] 
+        } 
+        for part in parts
+    ]
+    model_response = { 
+        'role': 'model', 
+        'parts': ["ok I will consider this only as knowledgebase"]
+    }
+    
+    for i in range(1, len(knowledge_base_prompt)):
+        knowledge_base_prompt.insert(i * 2, model_response)
+    
+    return knowledge_base_prompt
+
 @api_view(['POST'])
 @csrf_exempt
 def createbot(request,botid):
@@ -179,6 +203,7 @@ def createbot(request,botid):
         return JsonResponse({
             'error': 'Interaction style or description is missing.'
         })
+        
 
     try:
         user_description = UserDescription.objects.get(
@@ -219,15 +244,15 @@ def createbot(request,botid):
                 3. If the user asks about any person, object, or issue not included in the description, Sam should reply with "I'm sorry, but I don't know."
                 4. Include 5 more conversation pairs where the user asks general knowledge questions, and Sam responds with "I'm sorry, but I don't know" if the topic is not covered in the description. like who is modi it should respond I dont know
                 5. In greetings or introductory messages, Sam should respond politely according to the description that covers entire description, e.g., "Hello, I am Sam, your polite AI assistant. How can I assist you with [description title] today?"
-                6. generate 10 pairs that user breaks the description into 3 parts and every part is given to the sam for every conversation and ask sam to consider that data as knowledge base.
-                6a. generate 10 pairs that if the user asking for th eparticular product in the descriptions the sam will respond in a struture way that all the details of the product like description,link,extra information  and images of the product and link of the product and buy link 
+                6. generate 15 pairs that user breaks the description into 3 parts and every part is given to the sam for every conversation and ask sam to consider that data as knowledge base.
+                6a. generate 15 pairs that if the user asking for th eparticular product in the descriptions the sam will respond in a struture way that all the details of the product like description,link,extra information  and images of the product and link of the product and buy link 
                 7. Generate 10 conversation pairs related specifically to the description provided that covers entire description, maintaining a polite tone.
                 8. Lastly, add 5 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
                 9. Ensure Sam's responses are based solely on the description provided and adhere to the guidelines specified, with a polite demeanor.
                 9a. If asked about any topic not mentioned in the description (e.g., "Who is Elon Musk?"), Sam should reply with "I'm sorry, but I don't know."
                 10. Sam's jokes and memes should be polite and related to the given description, avoiding any offensive or harsh content.
-                11. Add 5 conversational pairs where Sam is able to provide links which are in the description along with the text. If any related question is asked by the user that covers entire description, it can give links and its information. this covers entire links in the description
-                12. Add 5 conversational pairs where if there are any images like jpg or jpeg image links in the description, the AI should be able to respond with the image link and its information if any related question is asked that covers entire description.\n\n
+                11. Add 20 conversational pairs where Sam is able to provide links which are in the description along with the text. If any related question is asked by the user that covers entire description, it can give links and its information. this covers entire links in the description
+                12. Add 20 conversational pairs where if there are any images like jpg or jpeg image links in the description, the AI should be able to respond with the image link and its information if any related question is asked that covers entire description.\n\n
                 13. Lastly, add 8 pairs where Sam behaves as if interacting with a new customer wanting to know about the description, being very polite and considerate. Sam should explain that it is an AI assistant that assists with the given description.
                 14 last 5 converstion pairs are that you will give my client chat with hime that you are ai assistant sam can help with the below description and answer his/her questions like brief way about the description related only
                 15 if the user ask who are you what can you do are any thing like general questions answer that you are sam ai assistance only talk about the description give no the external knoledge is considered.. any questioin related to general knowledge or external out of description questions answer should be in the way related to descriptiom only. consider the above questions and answers as the knowledge base no external knowledge is considered strictly
@@ -310,54 +335,58 @@ def createbot(request,botid):
                     if user_input is None:
                         print("No valid input provided.")
                         continue
+                    print(user_input)
+                    formatted_conversation=create_knowledge_base_prompt(user_input)
+                    print(formatted_conversation)
+                    history_list.extend(formatted_conversation)
                     
-                    user_input_template = description + "\n" + user_input
+                #     user_input_template = description + "\n" + user_input
                     
         
                     
-                    chat_session = model.start_chat(
-                        history=[
-                            # Initialize chat history if needed
-                        ]
-                    )
+                #     chat_session = model.start_chat(
+                #         history=[
+                #             # Initialize chat history if needed
+                #         ]
+                #     )
                     
-                    histroy_response = chat_session.send_message(user_input_template)
+                #     histroy_response = chat_session.send_message(user_input_template)
                     
-                    conv = histroy_response.text
+                #     conv = histroy_response.text
                     
-                    formatted_conversation = []
+                #     formatted_conversation = []
                     
-                    while not formatted_conversation:
-                        # Split the conversation into individual interactions
-                        interactions = conv.strip().split('\n\n')
+                #     while not formatted_conversation:
+                #         # Split the conversation into individual interactions
+                #         interactions = conv.strip().split('\n\n')
                         
-                        # Regex pattern to match roles and messages
-                        pattern = re.compile(r'(\w+):\s*(.*)')
+                #         # Regex pattern to match roles and messages
+                #         pattern = re.compile(r'(\w+):\s*(.*)')
                         
-                        for interaction in interactions:
-                            parts = interaction.strip().split('\n')
-                            for part in parts:
-                                match = pattern.match(part.strip())
-                                if match:
-                                    role, message = match.groups()
-                                    role = 'user' if role.lower() == 'user' else 'model'
-                                    formatted_conversation.append({
-                                        "role": role,
-                                        "parts": [message]
-                                    })
+                #         for interaction in interactions:
+                #             parts = interaction.strip().split('\n')
+                #             for part in parts:
+                #                 match = pattern.match(part.strip())
+                #                 if match:
+                #                     role, message = match.groups()
+                #                     role = 'user' if role.lower() == 'user' else 'model'
+                #                     formatted_conversation.append({
+                #                         "role": role,
+                #                         "parts": [message]
+                #                     })
                         
-                        if not formatted_conversation:
-                            print("Formatted conversation is empty, trying again...")
-                            chat_session = model.start_chat(
-                                history=[
-                                    # Initialize chat history if needed
-                                ]
-                            )
-                            histroy_response = chat_session.send_message(user_input_template)
-                            conv = histroy_response.text
+                #         if not formatted_conversation:
+                #             print("Formatted conversation is empty, trying again...")
+                #             chat_session = model.start_chat(
+                #                 history=[
+                #                     # Initialize chat history if needed
+                #                 ]
+                #             )
+                #             histroy_response = chat_session.send_message(user_input_template)
+                #             conv = histroy_response.text
                     
                     
-                    history_list.extend(formatted_conversation)
+                    
                     
                 except Exception as e:
                     print(f"Error in main loop: {e}")
@@ -374,7 +403,7 @@ def createbot(request,botid):
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import UserDescription
-
+from django.http import HttpResponse
 @api_view(['POST'])
 @csrf_exempt
 def chat_with_bot(request,botid):
@@ -410,15 +439,24 @@ def chat_with_bot(request,botid):
             chat_session = model.start_chat(
                 history=user_description.history_list
             )
-            
-            tr=chat_session.send_message("""Context-Specific Assistance:
+            print(user_description.history_list)
+            tr=chat_session.send_message("""
+Knowledge Base for AI Sam:
 
-Sam should only respond to queries related to the conversation history described above. 
+Context-Specific Assistance:
+
+Sam should only respond to queries related to the conversation history described above.
 If the client asks for clarification or help with anything specifically mentioned in the conversation history, Sam should provide detailed and helpful responses based on the information available.
 Handling General Knowledge Queries:
 
 If the client asks about any person, object, thing, or any general knowledge topic that is not related to the above conversation history, Sam should respond with: "I don't know."
 Sam should not provide any information or attempt to answer queries outside the scope of the defined conversation history.
+Handling Product Queries:
+
+If the client asks about any product, Sam should provide full details of the product, including relevant links, detailed information, and image URLs, based on the available knowledge and within the scope of the defined conversation history.
+Handling Image Queries:
+
+If the client asks about images, Sam should provide image URLs, considering the context provided above.
 Professional and Friendly Tone:
 
 Sam should maintain a polite, friendly, and professional tone in all responses, ensuring clear and concise communication.
@@ -426,7 +464,7 @@ AI Bot Identity:
 
 Sam should identify itself as an AI assistant for the described conversation history.
 Sam should clarify its scope and limitations if the client tries to engage in topics beyond the defined context.
-                                        Now my client will handle be as an sam ai assistant for him and consider all the points above must and should """)
+""")
             # Get user input from POST request
             
             print(tr)
@@ -441,7 +479,8 @@ Sam should clarify its scope and limitations if the client tries to engage in to
             response = chat_session.send_message(user_input)
 
             # Return AI response
-            return JsonResponse({'response': response.text})
+            # return JsonResponse({'response': response.text})
+            return HttpResponse(response.text, content_type="text/html")
 
         except Exception as e:
             return JsonResponse({'error': f'Error in chat session: {str(e)}'}, status=500)

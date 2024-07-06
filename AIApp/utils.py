@@ -72,7 +72,7 @@ def filter_links_by_pattern(url, links):
 
 
 import re
-def fetch_data_from_url(url,visited_urls_list=None, visited_urls=None, depth=0, max_depth=3):
+def fetch_data_from_url(url,visited_urls_list=None, visited_urls=None, depth=0, max_depth=5):
     if visited_urls is None:
         visited_urls = []
     if visited_urls_list is None:
