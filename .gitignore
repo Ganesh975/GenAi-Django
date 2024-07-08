@@ -1,0 +1,48 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+
+# Virtual Environments
+.env/
+.venv/
+
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+__pycache__
+db.sqlite3
+media/
+
+db.sqlite3
+__pycache__/
+
+# Django stuff:
+*.mo
+*.pot
+local_settings.py
+
+# If you are using Jupyter Notebooks
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
