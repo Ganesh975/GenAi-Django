@@ -293,7 +293,7 @@ def createbot(request,botid):
         elif interaction_style1 == 'friendly':
             description = """
                 In the friendly interaction style, the AI, named Sam, should be warm and approachable in its responses. The goal is to create an atmosphere of camaraderie and support. Sam’s answers should be cheerful, engaging, and positive, making sure the user feels welcomed and comfortable. Humor should be light-hearted and fun. Sam should often use phrases like "sure thing," "glad to help," and "hope that helps!"
-
+                
                 Please generate a detailed and coherent conversation between a user and Sam, formatted as follows:
 
                 "
@@ -400,10 +400,78 @@ def createbot(request,botid):
     except Exception as e:
         return Response({"error": f"Error in conversation generation or saving history list: {e}"}, status=500)
 
+import re
+import markdown
+
+import re
+import markdown
+import html
+
+def process_markdown_text(markdown_text):
+    """
+    Processes the Markdown text to replace URLs with anchor tags
+    and image URLs with image tags, ensuring HTML entities are handled correctly.
+    """
+
+    # Regular expression for matching URLs
+    url_pattern = re.compile(
+        r'(https?://[^\s<]+)'
+    )
+
+    # Regular expression for matching image URLs
+    image_pattern = re.compile(
+        r'(https?://[^\s<]+\.(?:png|jpg|jpeg))', re.IGNORECASE
+    )
+
+    # Replace image URLs with <img> tags
+    def replace_image(match):
+        url = match.group(0)
+        return f'<img src="{url}" alt="Image">'
+
+    # Replace regular URLs with <a> tags, but avoid double-processing image URLs
+    def replace_url(match):
+        url = match.group(0)
+        if not re.search(image_pattern, url):
+            return f'<a href="{url}">{url}</a>'
+        return url
+
+    # Process image URLs first
+    processed_text = re.sub(image_pattern, replace_image, markdown_text)
+
+    # Then process the remaining URLs
+    processed_text = re.sub(url_pattern, replace_url, processed_text)
+
+    return processed_text
+
+def modify_markdown(text):
+  """Modifies markdown text with links and images.
+
+  Args:
+      text: The markdown text to modify.
+
+  Returns:
+      The modified markdown text with links wrapped in anchor tags and images wrapped in image tags.
+  """
+  lines = []
+  for line in text.splitlines():
+    newLine = line
+    # Find links
+    for url in find_urls(line):
+      newLine = newLine.replace(url, f"[({url})](にした {url})")  # Replace with anchor tag (language specific replacement needed)
+    # Find images
+    for img in find_images(line):
+      newLine = newLine.replace(img, f"![]({img})")
+    lines.append(newLine)
+  return "\n".join(lines)
+
+
+
+
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from .models import UserDescription
 from django.http import HttpResponse
+import markdown
 @api_view(['POST'])
 @csrf_exempt
 def chat_with_bot(request,botid):
@@ -439,7 +507,7 @@ def chat_with_bot(request,botid):
             chat_session = model.start_chat(
                 history=user_description.history_list
             )
-            print(user_description.history_list)
+            
             tr=chat_session.send_message("""
 Knowledge Base for AI Sam:
 
@@ -466,9 +534,7 @@ Sam should identify itself as an AI assistant for the described conversation his
 Sam should clarify its scope and limitations if the client tries to engage in topics beyond the defined context.
 """)
             # Get user input from POST request
-            
             print(tr)
-            
             user_input = request.data.get('user_input', '')
 
             # Check if user wants to exit
@@ -477,10 +543,16 @@ Sam should clarify its scope and limitations if the client tries to engage in to
 
             # Send user input to the chat session
             response = chat_session.send_message(user_input)
+            
+            markdown_text = markdown.markdown(response.text)
+            
+            m_text=process_markdown_text(markdown_text)
+            
+            print(m_text)
 
             # Return AI response
-            # return JsonResponse({'response': response.text})
-            return HttpResponse(response.text, content_type="text/html")
+            # return JsonResponse({'response': markdown_text})
+            return HttpResponse(m_text, content_type="text/html")
 
         except Exception as e:
             return JsonResponse({'error': f'Error in chat session: {str(e)}'}, status=500)
