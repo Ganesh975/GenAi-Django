@@ -43,9 +43,9 @@ nltk.download('punkt')
 def home(request,botid):
     return Response({"message": "Please choose an option: '1' for PDF, '2' for URL, '3' for description, or '4' for multiple URLs."})
 
+import datetime
 
-
-
+import os
 @api_view(['POST'])
 def handle_user_choice(request,botid):
     try:
@@ -56,12 +56,30 @@ def handle_user_choice(request,botid):
             pdf_file = request.FILES.get('file')
             if pdf_file:
                 description = select_and_read_pdf(pdf_file)
+                # Calculate character count (assuming description is text)
+                character_count = len(description)
+                # Get file details (assuming request.FILES provides access)
+                file_info = {
+                    "ext": os.path.splitext(pdf_file.name)[1],  # Get file extension
+                    "name": pdf_file.name,
+                    "size": pdf_file.size,
+                    "mime": pdf_file.content_type,
+                }
+                # Prepare response data
+                data = {
+                    "id": 2856292,  # Replace with actual ID
+                    "status": "processed",
+                    "status_message": None,
+                    "characters": character_count,
+                    "file": file_info,
+                    "chunks_count": 16,  # Replace with actual chunk count (if relevant)
+                }
                 UserDescription.objects.create(
                     botid=botid,
                     description=description,
-                    url_data=None  # No URL data for choice 1
+                    url_data=None,  # No URL data for choice 1
                 )
-                return JsonResponse({"text": description})
+                return JsonResponse({"data": [data]})
             else:
                 return JsonResponse({"error": "No file provided"}, status=400)
         
@@ -81,12 +99,25 @@ def handle_user_choice(request,botid):
         elif user_choice == '3':
             description = request.data.get('description')
             if description:
+                # Calculate character count (assuming description is text)
+                character_count = len(description)
+                # Prepare response data
+                data = {
+                    "id": 2856291,  # Replace with actual ID
+                    "status": "processed",
+                    "status_message": None,
+                    "html": description,  # Assuming description is HTML content
+                    "characters": character_count,
+                    "chunks_count": 1,  # Assuming there's only one chunk (adjust if needed)
+                    "created_at": datetime.datetime.utcnow().isoformat()  # Get current UTC time
+                }
                 UserDescription.objects.create(
                     botid=botid,
                     description=description,
-                    url_data=None  # No URL data for choice 3
+                    url_data=None,  # No URL data for choice 3
                 )
-                return JsonResponse({"description": description})
+                return JsonResponse({"data": [data]})
+
             else:
                 return JsonResponse({"error": "No description provided"}, status=400)
         
@@ -138,8 +169,6 @@ def handle_bot_style(request,botid):
         user_description = UserDescription.objects.get(
                 botid=str(botid)
             )
-
-
 
         # Update interaction_style
         user_description.interaction_style = interaction_style
@@ -435,10 +464,8 @@ def process_markdown_text(markdown_text):
             return f'<a href="{url}">{url}</a>'
         return url
 
-    # Process image URLs first
     processed_text = re.sub(image_pattern, replace_image, markdown_text)
 
-    # Then process the remaining URLs
     processed_text = re.sub(url_pattern, replace_url, processed_text)
 
     return processed_text
@@ -507,7 +534,7 @@ def chat_with_bot(request,botid):
             chat_session = model.start_chat(
                 history=user_description.history_list
             )
-            
+            print(chat_session,type(chat_session))
             tr=chat_session.send_message("""
 Knowledge Base for AI Sam:
 
