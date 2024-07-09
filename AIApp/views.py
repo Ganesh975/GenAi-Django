@@ -66,8 +66,7 @@ def handle_user_choice(request,botid):
                     "mime": pdf_file.content_type,
                 }
                 # Prepare response data
-                data = {
-                    "id": 2856292,  # Replace with actual ID
+                data = {  # Replace with actual ID
                     "status": "processed",
                     "status_message": None,
                     "characters": character_count,
@@ -103,10 +102,9 @@ def handle_user_choice(request,botid):
                 character_count = len(description)
                 # Prepare response data
                 data = {
-                    "id": 2856291,  # Replace with actual ID
                     "status": "processed",
                     "status_message": None,
-                    "html": description,  # Assuming description is HTML content
+                    "html": "<p>"+description+"</p>",  # Assuming description is HTML content
                     "characters": character_count,
                     "chunks_count": 1,  # Assuming there's only one chunk (adjust if needed)
                     "created_at": datetime.datetime.utcnow().isoformat()  # Get current UTC time
