@@ -58,8 +58,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    #
+    "https://gen-ai-ui.vercel.app",
+    "https://gen-ai-backend-dev.vercel.app"
 ]
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 
