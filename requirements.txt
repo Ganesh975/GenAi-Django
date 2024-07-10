@@ -13,4 +13,4 @@ gunicorn==22.0.0
 django-cors-headers==4.4.0
 psycopg2>=2.9.9
 regex==2024.5.15
-markdown2>=2.4.0
+Markdown==3.6
