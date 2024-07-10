@@ -14,8 +14,8 @@ import json
 import ast
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
-import tkinter as tk
-from tkinter import filedialog, simpledialog
+# import tkinter as tk
+# from tkinter import filedialog, simpledialog
 import fitz  # PyMuPDF
 from PIL import Image
 import io
