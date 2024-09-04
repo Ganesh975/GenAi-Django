@@ -97,7 +97,7 @@ WSGI_APPLICATION = "GenAiDjango.wsgi.application"
 # }
 
 DATABASES = {
-    "default": dj_database_url.parse("postgresql://genaidb_ptho_user:YYE2adeK6GFWylqzpJe7DRmJ1gpPTdzD@dpg-cq723f88fa8c7382loug-a.oregon-postgres.render.com/genaidb_ptho")
+    "default": dj_database_url.parse("postgresql://genaidb_d3er_user:Lm9YcCCbvkjyOdu2hAOAKGXkwoOWJmJz@dpg-crbtg4rtq21c73cmfkpg-a.oregon-postgres.render.com/genaidb_d3er")
 }
 
 
