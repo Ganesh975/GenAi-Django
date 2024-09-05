@@ -199,7 +199,7 @@ def split_text(text, max_tokens):
     return parts
 
 def create_knowledge_base_prompt(description):
-    parts = split_text(description, 200)
+    parts = split_text(description, 4000)
     knowledge_base_prompt = [
         { 
             'role': 'user', 
@@ -352,7 +352,7 @@ def createbot(request,botid):
             exit()
         history_list = []
         description_text = user_description.description
-        max_tokens = 1000
+        max_tokens = 8000
         parts = split_text(description_text, max_tokens)
             
         for i, user_input in enumerate(parts, start=1):
@@ -362,9 +362,7 @@ def createbot(request,botid):
                     if user_input is None:
                         print("No valid input provided.")
                         continue
-                    print(user_input)
                     formatted_conversation=create_knowledge_base_prompt(user_input)
-                    print(formatted_conversation)
                     history_list.extend(formatted_conversation)
                     
                 #     user_input_template = description + "\n" + user_input
@@ -378,6 +376,7 @@ def createbot(request,botid):
                 #     )
                     
                 #     histroy_response = chat_session.send_message(user_input_template)
+                    
                     
                 #     conv = histroy_response.text
                     
@@ -419,6 +418,8 @@ def createbot(request,botid):
                     print(f"Error in main loop: {e}")
             
             # Assuming you have a field named 'history_list' in your UserDescription model
+        print(history_list)
+        print(len(history_list))
         user_description.history_list = history_list
         user_description.train_status=True
         user_description.save()
@@ -499,9 +500,95 @@ from django.http import HttpResponse
 import markdown
 @api_view(['POST'])
 @csrf_exempt
-def chat_with_bot(request,botid):
-    # Configure the API key
+# def chat_with_bot(request,botid):
+#     # Configure the API key
+#     try:
+#         genai.configure(api_key="AIzaSyCo870-t1sjOB4bASzJ4A0rYe0Wjil3SgA")
+#         generation_config = {
+#             "temperature": 1.5,
+#             "top_p": 0.95,
+#             "top_k": 64,
+#             "max_output_tokens": 15000,
+#             "response_mime_type": "text/plain",
+#         }
+#         model = genai.GenerativeModel(
+#             model_name="gemini-1.5-flash",
+#             generation_config=generation_config,
+#         )
+#     except Exception as e:
+#         print(f"Error configuring or initializing the generative model: {e}")
+#         exit()
+#     # Retrieve the UserDescription object based on uid, projectid, and botid
+#     user_description = get_object_or_404(
+#         UserDescription,
+#         botid=botid
+#     )
+
+#     # Check if train_status is True
+#     if user_description.train_status:
+#         try:
+#             # Initialize chat session with history_list if available
+#             # print(user_description.history_list)
+            
+#             chat_session = model.start_chat(
+#                 history=user_description.history_list
+#             )
+#             print(chat_session,type(chat_session))
+#             tr=chat_session.send_message("""
+# Knowledge Base for AI Sam:
+
+# Context-Specific Assistance:
+
+# Sam should only respond to queries related to the conversation history described above.
+# If the client asks for clarification or help with anything specifically mentioned in the conversation history, Sam should provide detailed and helpful responses based on the information available.
+# Handling General Knowledge Queries:
+
+# If the client asks about any person, object, thing, or any general knowledge topic that is not related to the above conversation history, Sam should respond with: "I don't know."
+# Sam should not provide any information or attempt to answer queries outside the scope of the defined conversation history.
+# Handling Product Queries:
+
+# If the client asks about any product, Sam should provide full details of the product, including relevant links, detailed information, and image URLs, based on the available knowledge and within the scope of the defined conversation history.
+# Handling Image Queries:
+
+# If the client asks about images, Sam should provide image URLs, considering the context provided above.
+# Professional and Friendly Tone:
+
+# Sam should maintain a polite, friendly, and professional tone in all responses, ensuring clear and concise communication.
+# AI Bot Identity:
+
+# Sam should identify itself as an AI assistant for the described conversation history.
+# Sam should clarify its scope and limitations if the client tries to engage in topics beyond the defined context.
+# """)
+#             # Get user input from POST request
+#             print(tr)
+#             user_input = request.data.get('user_input', '')
+
+#             # Check if user wants to exit
+#             if user_input.lower() == "exit":
+#                 return JsonResponse({'message': 'Session ended.'})
+
+#             # Send user input to the chat session
+#             response = chat_session.send_message(user_input)
+            
+#             markdown_text = markdown.markdown(response.text)
+            
+#             m_text=process_markdown_text(markdown_text)
+            
+#             print(m_text)
+
+#             # Return AI response
+#             # return JsonResponse({'response': markdown_text})
+#             return HttpResponse(m_text, content_type="text/html")
+
+#         except Exception as e:
+#             return JsonResponse({'error': f'Error in chat session: {str(e)}'}, status=500)
+
+#     else:
+#         return JsonResponse({'error': 'Bot is not trained yet.'}, status=400)
+
+def chat_with_bot(request, botid):
     try:
+        # Configure the API key
         genai.configure(api_key="AIzaSyCo870-t1sjOB4bASzJ4A0rYe0Wjil3SgA")
         generation_config = {
             "temperature": 1.5,
@@ -510,30 +597,38 @@ def chat_with_bot(request,botid):
             "max_output_tokens": 15000,
             "response_mime_type": "text/plain",
         }
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            generation_config=generation_config,
-        )
-    except Exception as e:
-        print(f"Error configuring or initializing the generative model: {e}")
-        exit()
-    # Retrieve the UserDescription object based on uid, projectid, and botid
-    user_description = get_object_or_404(
-        UserDescription,
-        botid=botid
-    )
 
-    # Check if train_status is True
-    if user_description.train_status:
-        try:
-            # Initialize chat session with history_list if available
-            # print(user_description.history_list)
-            
-            chat_session = model.start_chat(
-                history=user_description.history_list
+        # Retrieve the UserDescription object based on botid
+        user_description = get_object_or_404(UserDescription, botid=botid)
+        history_list = user_description.history_list
+
+        # Determine the number of chunks needed (10 items per chunk)
+        chunk_size = 3
+        num_chunks = len(history_list) // chunk_size + (1 if len(history_list) % chunk_size != 0 else 0)
+
+        # Create GenerativeModel objects
+        model_list = []
+        for _ in range(num_chunks):
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                generation_config=generation_config,
             )
-            print(chat_session,type(chat_session))
-            tr=chat_session.send_message("""
+            model_list.append(model)
+
+        # Check if train_status is True
+        if user_description.train_status:
+            try:
+                # Initialize chat sessions for each model with respective history chunks
+                chat_sessions = []
+                for i, model in enumerate(model_list):
+                    start_index = i * chunk_size
+                    end_index = start_index + chunk_size
+                    chunk_history = history_list[start_index:end_index]
+                    chat_session = model.start_chat(history=chunk_history)
+                    chat_sessions.append(chat_session)
+
+                # Assign knowledge base to each chat session
+                tr_message = """
 Knowledge Base for AI Sam:
 
 Context-Specific Assistance:
@@ -557,34 +652,41 @@ AI Bot Identity:
 
 Sam should identify itself as an AI assistant for the described conversation history.
 Sam should clarify its scope and limitations if the client tries to engage in topics beyond the defined context.
-""")
-            # Get user input from POST request
-            print(tr)
-            user_input = request.data.get('user_input', '')
+"""
+                for chat_session in chat_sessions:
+                    chat_session.send_message(tr_message)
 
-            # Check if user wants to exit
-            if user_input.lower() == "exit":
-                return JsonResponse({'message': 'Session ended.'})
+                # Get user input from POST request
+                user_input = request.data.get('user_input', '')
 
-            # Send user input to the chat session
-            response = chat_session.send_message(user_input)
-            
-            markdown_text = markdown.markdown(response.text)
-            
-            m_text=process_markdown_text(markdown_text)
-            
-            print(m_text)
+                # Check if user wants to exit
+                if user_input.lower() == "exit":
+                    return JsonResponse({'message': 'Session ended.'})
 
-            # Return AI response
-            # return JsonResponse({'response': markdown_text})
-            return HttpResponse(m_text, content_type="text/html")
+                # Send user input to each chat session and collect responses
+                responses = []
+                for chat_session in chat_sessions:
+                    response = chat_session.send_message(user_input)
+                    responses.append(response.text)
 
-        except Exception as e:
-            return JsonResponse({'error': f'Error in chat session: {str(e)}'}, status=500)
+                # Print the responses of each chat session
+                for i, response in enumerate(responses):
+                    print(f"Response from chat session {i+1}: {response}")
 
-    else:
-        return JsonResponse({'error': 'Bot is not trained yet.'}, status=400)
-    
+                # Return the responses as HTML
+                responses_html = "".join([f"<p>Response {i+1}: {response}</p>" for i, response in enumerate(responses)])
+                return HttpResponse(responses_html, content_type="text/html")
+
+            except Exception as e:
+                return JsonResponse({'error': f'Error in chat session: {str(e)}'}, status=500)
+
+        else:
+            return JsonResponse({'error': 'Bot is not trained yet.'}, status=400)
+
+    except Exception as e:
+        print(f"Error configuring or initializing the generative model: {e}")
+        return JsonResponse({'error': f'Error configuring or initializing the generative model: {str(e)}'}, status=500)
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
